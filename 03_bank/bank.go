@@ -9,53 +9,52 @@ import (
 
 const accountBalanceFile = "balance.txt"
 
-func getBalanceFromFile() (float64, error) {
-	data, err := os.ReadFile(accountBalanceFile)
+func getFloatFromFile(fileName string) (float64, error) {
+	data, err := os.ReadFile(fileName)
 
 	if err != nil {
-		return 1000, errors.New("Failed to find balance file")
+		return 1000, errors.New("failed to find file")
 	}
 
-	balanceText := string(data)
-	balance, err := strconv.ParseFloat(balanceText, 64)
+	valueText := string(data)
+	value, err := strconv.ParseFloat(valueText, 64)
 
 	if err != nil {
-		return 1000, errors.New("Failed to parse stored balance value")
+		return 1000, errors.New("failed to parse stored value")
 	}
 
-	return balance, nil 
+	return value, nil
 }
 
-func writeBalaceToFile(balance float64) {
-	balanceText := fmt.Sprint(balance)
-	os.WriteFile(accountBalanceFile, []byte(balanceText), 0644)
+func writeFloatToFile(value float64, fileName string) {
+	valueText := fmt.Sprint(value)
+	os.WriteFile(fileName, []byte(valueText), 0644)
 }
 
 func main() {
-	accountBalance, err := getBalanceFromFile()
-	fmt.Println("Welcome to Go Bank!")
+	var accountBalance, err = getFloatFromFile(accountBalanceFile)
 
 	if err != nil {
 		fmt.Println("ERROR")
 		fmt.Println(err)
-		fmt.Println("----------------")
-		return 
+		fmt.Println("---------")
+		// panic("Can't continue, sorry.")
 	}
 
-	for {
-		fmt.Println("What do you want to do?")
-		fmt.Println("1. Check Balance")
-		fmt.Println("2. Deposit Money")
-		fmt.Println("3. Withdraw Money")
-		fmt.Println("4. Exit")
+	fmt.Println("Welcome to Go Bank!")
 
+	presentOptions()
+
+	for {
 		var choice int
-		fmt.Print("Please select an option: ")
+		fmt.Print("Your choice: ")
 		fmt.Scan(&choice)
+
+		// wantsCheckBalance := choice == 1
 
 		switch choice {
 		case 1:
-			fmt.Println("Your balance: ", accountBalance)
+			fmt.Println("Your balance is", accountBalance)
 		case 2:
 			fmt.Print("Your deposit: ")
 			var depositAmount float64
@@ -63,12 +62,13 @@ func main() {
 
 			if depositAmount <= 0 {
 				fmt.Println("Invalid amount. Must be greater than 0.")
+				// return
 				continue
 			}
 
-			accountBalance += depositAmount
-			fmt.Println("Your current balance is: ", accountBalance)
-			writeBalaceToFile(accountBalance)
+			accountBalance += depositAmount // accountBalance = accountBalance + depositAmount
+			fmt.Println("Balance updated! New amount:", accountBalance)
+			writeFloatToFile(accountBalance, accountBalanceFile)
 		case 3:
 			fmt.Print("Withdrawal amount: ")
 			var withdrawalAmount float64
@@ -80,15 +80,15 @@ func main() {
 			}
 
 			if withdrawalAmount > accountBalance {
-				fmt.Println("Invalid amount. Exceeds balance.")
+				fmt.Println("Invalid amount. You can't withdraw more than you have.")
 				continue
 			}
 
-			accountBalance -= withdrawalAmount
-			fmt.Println("Your current balance is: ", accountBalance)
-			writeBalaceToFile(accountBalance)
+			accountBalance -= withdrawalAmount // accountBalance = accountBalance + depositAmount
+			fmt.Println("Balance updated! New amount:", accountBalance)
+			writeFloatToFile(accountBalance, accountBalanceFile)
 		default:
-			fmt.Println("Goodbye")
+			fmt.Println("Goodbye!")
 			fmt.Println("Thanks for choosing our bank")
 			return
 			// break
